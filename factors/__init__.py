@@ -3,7 +3,7 @@ from .factor_library import (
     calc_pb_inverse,
     calc_dividend_yield,
     calc_momentum,
-    calc_roe,
+    #calc_roe,
 )
 
 __all__ = [

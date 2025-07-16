@@ -1,3 +1,4 @@
+
 import pandas as pd
 
 
@@ -40,4 +41,3 @@ def calc_roe(df: pd.DataFrame) -> pd.Series:
     Measures profitability relative to equity.
     """
     return df['roe']
-

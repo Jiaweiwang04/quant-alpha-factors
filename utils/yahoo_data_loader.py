@@ -3,21 +3,19 @@ import pandas as pd
 import os
 from datetime import datetime
 
-def fetch_yahoo_data(tickers, price_period="60d", price_interval="1d"):
-    """
-    Fetch Yahoo Finance data and save into project's data directory.
-    """
-    
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    data_dir = os.path.join(project_root, "data")
-    os.makedirs(data_dir, exist_ok=True)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+data_dir = os.path.join(project_root, "data")
+os.makedirs(data_dir, exist_ok=True)
 
-    factor_path = os.path.join(data_dir, "sample_stock_data.csv")
-    price_path = os.path.join(data_dir, "close_prices.csv")
 
-    
+def fetch_yahoo_factors(tickers):
+    """
+    Fetch factor data (PE, PB, etc.) from Yahoo Finance and save to CSV.
+    """
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    factor_path = os.path.join(data_dir, f"sample_stock_data_{today_str}.csv")
+
     records = []
-
     for ticker in tickers:
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -33,30 +31,42 @@ def fetch_yahoo_data(tickers, price_period="60d", price_interval="1d"):
             'pb': info.get('priceToBook'),
             'dividendyield': info.get('dividendYield'),
             'close': close_price,
-            'date': datetime.today().strftime('%Y-%m-%d')
+            'date': today_str
         }
-
         records.append(row)
 
-    df_factors = pd.DataFrame(records)
-    df_factors.dropna(inplace=True)
-    df_factors.to_csv(factor_path, index=False)
-    print(f"[✓] Factor data saved to: {factor_path}")
+    df = pd.DataFrame(records)
+    df.dropna(inplace=True)
+    df.to_csv(factor_path, index=False)
+    print(f"[Factor] Saved to: {factor_path}")
+    return df
 
-    
+
+def fetch_close_prices(tickers, period="60d", interval="1d"):
+    """
+    Fetch close price history from Yahoo Finance and save to CSV.
+    """
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    price_path = os.path.join(data_dir, f"close_prices_{today_str}.csv")
+
     close_prices = {}
     for ticker in tickers:
-        hist = yf.Ticker(ticker).history(period=price_period, interval=price_interval)
+        hist = yf.Ticker(ticker).history(period=period, interval=interval)
         if not hist.empty:
             close_prices[ticker] = hist['Close']
 
     if close_prices:
         df_prices = pd.DataFrame(close_prices)
         df_prices.to_csv(price_path)
-        print(f"[✓] Close price history saved to: {price_path}")
+        print(f"[Price] Saved to: {price_path}")
+        return df_prices
+    else:
+        print("[Price] No data fetched.")
+        return pd.DataFrame()
 
-    return df_factors
+
 
 if __name__ == "__main__":
-    tickers = ['AAPL', 'MSFT', 'GOOGL', 'META', 'AMZN']
-    fetch_yahoo_data(tickers)
+    tickers = ['AAPL', 'MSFT', 'GOOGL']
+    fetch_yahoo_factors(tickers)
+    fetch_close_prices(tickers)

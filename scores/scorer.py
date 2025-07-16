@@ -54,6 +54,6 @@ if __name__ == "__main__":
     result.to_csv(output_path)
 
     
-    print("\n[✓] Score file saved to:", output_path)
+    print("\n Score file saved to:", output_path)
     print("\nTop Scored Stocks:\n")
     print(result.sort_values(by="total_score", ascending=False).round(3))
